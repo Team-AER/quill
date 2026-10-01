@@ -1,0 +1,7 @@
+Your previous answer did not match the required JSON schema. Problems:
+{errors}
+
+Return the corrected answer as a single JSON object that matches this schema exactly, with no prose and no code fences:
+{schema}
+
+Keep the same content; only fix the structure. Do not add facts that are not in the transcript.

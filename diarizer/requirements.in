@@ -1,0 +1,7 @@
+# Runtime deps for the real model on Linux x86-64 CPU (compiled into requirements-lock-linux-x86_64-cpu.txt).
+# transformers: Nemotron3Diarization is on main only (5.18.0.dev0); pinned to the benchmarked commit as a source tarball (no git needed).
+numpy
+soundfile
+librosa
+torch==2.14.0+cpu
+transformers @ https://github.com/huggingface/transformers/archive/f339035b986aaf719bc6f5ea92342f73c498cb0e.tar.gz

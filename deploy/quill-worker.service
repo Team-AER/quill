@@ -1,0 +1,50 @@
+[Unit]
+Description=Quill worker (pipeline stages; spawns ffmpeg and the diarizer)
+After=network-online.target quill-api.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=quill
+Group=quill
+WorkingDirectory=/opt/quill/current/backend
+EnvironmentFile=/etc/quill/quill.env
+Environment=PYTHONPATH=/opt/quill/current/backend
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=HOME=/var/lib/quill
+Environment=XDG_CACHE_HOME=/var/lib/quill/cache
+# Model weights fetched by the diarizer persist across restarts and releases.
+Environment=HF_HOME=/var/lib/quill/cache/huggingface
+Environment=TORCH_HOME=/var/lib/quill/cache/torch
+# librosa JIT-compiles with numba, which needs a writable cache outside the read-only venv.
+Environment=NUMBA_CACHE_DIR=/var/lib/quill/cache/numba
+ExecStart=/opt/quill/venv/bin/python -m quill.worker
+Restart=on-failure
+RestartSec=10
+# Stages are checkpointed in SQLite: a stop mid-stage resumes that stage on start.
+# KillMode=control-group (default) also stops the diarizer and ffmpeg children.
+KillMode=control-group
+TimeoutStopSec=60
+# No CPU quota: diarization should use every core, but yield to the API.
+Nice=5
+# The diarizer subprocess (torch-cpu + NeMo) runs inside this unit's cgroup.
+MemoryHigh=8G
+MemoryMax=9G
+LimitNOFILE=65536
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+ReadWritePaths=/var/lib/quill
+RestrictSUIDSGID=true
+RestrictRealtime=true
+LockPersonality=true
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

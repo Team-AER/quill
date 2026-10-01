@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.egg-info/
+.pytest_cache/
+*.pyc
+.DS_Store
+
+# Local, per-install notes (homelab specifics stay off GitHub)
+*.local.md
+build/

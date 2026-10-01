@@ -1,0 +1,39 @@
+[Unit]
+Description=Quill API (FastAPI: auth, tus uploads, REST, SSE)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=quill
+Group=quill
+WorkingDirectory=/opt/quill/current/backend
+EnvironmentFile=/etc/quill/quill.env
+Environment=PYTHONPATH=/opt/quill/current/backend
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=HOME=/var/lib/quill
+Environment=XDG_CACHE_HOME=/var/lib/quill/cache
+# nginx on this host is the only client; it forwards NPMplus' X-Forwarded-Proto.
+ExecStart=/opt/quill/venv/bin/uvicorn quill.app:app --host 127.0.0.1 --port 8020 --workers 1 --proxy-headers --forwarded-allow-ips=127.0.0.1 --timeout-keep-alive 75 --timeout-graceful-shutdown 15
+Restart=on-failure
+RestartSec=3
+# SSE streams never finish on their own; interrupted tus uploads resume client-side.
+TimeoutStopSec=30
+LimitNOFILE=65536
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+ReadWritePaths=/var/lib/quill
+RestrictSUIDSGID=true
+RestrictRealtime=true
+LockPersonality=true
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

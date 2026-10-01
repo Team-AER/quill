@@ -1,0 +1,21 @@
+[Unit]
+Description=Back up the Quill SQLite database
+
+[Service]
+Type=oneshot
+# Exit 3: no database yet (fresh install) - not a failure.
+SuccessExitStatus=3
+User=quill
+Group=quill
+EnvironmentFile=/etc/quill/quill.env
+ExecStart=/usr/bin/python3 /opt/quill/current/deploy/backup.py --label nightly --keep 7
+UMask=0077
+Nice=10
+IOSchedulingClass=idle
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+# SQLite needs writable directory access for WAL shared-memory sidecars even
+# though the source connection is read-only and the backup API only reads it.
+ReadWritePaths=/var/lib/quill

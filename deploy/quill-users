@@ -1,0 +1,13 @@
+#!/bin/sh
+# Manage Quill accounts from a shell inside the CT, e.g. when the only admin
+# forgot their password (docs/ACCOUNTS.md). Installed to /usr/local/bin.
+#   quill-users list
+#   quill-users reset-link EMAIL
+#   quill-users set-role EMAIL admin|member
+#   quill-users enable EMAIL
+set -eu
+ROOT=/opt/quill
+exec systemd-run --quiet --wait --pipe --collect -p User=quill -p Group=quill \
+  -p EnvironmentFile=/etc/quill/quill.env -p WorkingDirectory="$ROOT/current/backend" \
+  -E PYTHONPATH="$ROOT/current/backend" -E PYTHONDONTWRITEBYTECODE=1 -E HOME=/var/lib/quill \
+  "$ROOT/venv/bin/python" -m quill.users "$@"

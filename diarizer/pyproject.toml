@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "quill-diarizer"
+version = "0.1.0"
+description = "Quill speaker diarization: nvidia/Nemotron-3-Diarization on CPU, turns JSON out"
+requires-python = ">=3.12"
+license = "MIT"
+# Core deps only: enough for fake mode and post-processing.
+dependencies = ["numpy>=1.26", "soundfile>=0.12"]
+
+[project.optional-dependencies]
+# Real inference. transformers must include Nemotron3Diarization (5.18+, currently only
+# on git main); the exact pins live in requirements-lock-linux-x86_64-cpu.txt.
+model = ["torch>=2.9", "transformers>=5.18.0.dev0", "librosa>=0.11"]
+test = ["pytest>=8"]
+bench = ["pyarrow", "scipy", "psutil"]
+
+[project.scripts]
+quill-diarize = "quill_diarizer.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
