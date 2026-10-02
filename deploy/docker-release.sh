@@ -207,7 +207,7 @@ systemctl enable --quiet --now quill-backup.timer
 [ ! -f "$src/deploy/quill-users" ] || install -m 0755 "$src/deploy/quill-users" /usr/local/bin/quill-users
 
 # 7. retention: newest tags plus whatever .env / .env.previous reference
-keep="$(cat "$ROOT/.env" "$ROOT/.env.previous" 2>/dev/null | sed -n 's/^QUILL_\(WEB_\)\{0,1\}IMAGE=//p' | sort -u)"
+keep="$(cat "$ROOT/.env" "$ROOT/.env.previous" 2>/dev/null | sed -n 's/^QUILL_\(WEB_\)\{0,1\}IMAGE=//p' | sort -u || true)"   # no .env.previous after a native -> docker switch
 for repo in quill quill-web; do
   docker image ls "$repo" --format '{{.Repository}}:{{.Tag}} {{.CreatedAt}}' | sort -k2 -r | awk '{print $1}' |
     tail -n +$((KEEP + 1)) | while read -r image; do
