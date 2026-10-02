@@ -1,0 +1,13 @@
+[Unit]
+Description=Back up the Quill SQLite database (runs in the Quill image)
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+# Exit 3: no database yet (fresh install) - not a failure.
+SuccessExitStatus=3
+ExecStart=/usr/bin/docker compose -f /opt/quill/compose.yaml --env-file /opt/quill/.env \
+  run --rm --no-deps -T api python /app/deploy/backup.py --label nightly --keep 7
+Nice=10
+IOSchedulingClass=idle
