@@ -7,6 +7,10 @@
 #   quill-users enable EMAIL
 set -eu
 ROOT=/opt/quill
+if [ -f "$ROOT/compose.yaml" ] && [ -f "$ROOT/.env" ]; then
+  # Docker install (deploy/docker-release.sh): run inside the api container.
+  exec docker compose -f "$ROOT/compose.yaml" --env-file "$ROOT/.env" exec -T api python -m quill.users "$@"
+fi
 exec systemd-run --quiet --wait --pipe --collect -p User=quill -p Group=quill \
   -p EnvironmentFile=/etc/quill/quill.env -p WorkingDirectory="$ROOT/current/backend" \
   -E PYTHONPATH="$ROOT/current/backend" -E PYTHONDONTWRITEBYTECODE=1 -E HOME=/var/lib/quill \

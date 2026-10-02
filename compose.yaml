@@ -1,0 +1,79 @@
+# Quill in Docker: api + worker (one image) behind nginx (web image).
+# Installed to /opt/quill/compose.yaml by deploy/docker-release.sh; /opt/quill/.env
+# pins QUILL_IMAGE / QUILL_WEB_IMAGE to the release being run.
+#
+# Host paths (inside the Quill LXC):
+#   /etc/quill/quill.env            settings (QUILL_SECRET_KEY etc.), 0640 root:quill
+#   /etc/quill/nginx-real-ip.conf   which reverse proxy may set X-Forwarded-For
+#   /var/lib/quill                  db/ uploads/ media/ backups/ cache/ models/
+name: quill
+
+x-app: &app
+  image: ${QUILL_IMAGE:-quill:dev}
+  env_file: /etc/quill/quill.env
+  environment:
+    # Paths inside the image; they override older values in quill.env.
+    QUILL_DATA_DIR: /var/lib/quill
+    QUILL_DIARIZER_CMD: /opt/quill/diarizer-venv/bin/quill-diarize
+  user: "${QUILL_UID:-999}:${QUILL_GID:-990}"
+  volumes:
+    - /var/lib/quill:/var/lib/quill
+  read_only: true
+  tmpfs:
+    - /tmp:size=512m
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  ulimits:
+    nofile: 65536
+  restart: unless-stopped
+  logging:
+    driver: journald
+    options:
+      tag: "{{.Name}}"
+
+services:
+  api:
+    <<: *app
+    stop_grace_period: 30s   # SSE streams never end on their own; tus uploads resume client-side
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8020/api/auth/state', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  worker:
+    <<: *app
+    command: ["python", "-m", "quill.worker"]
+    environment:
+      QUILL_DATA_DIR: /var/lib/quill
+      QUILL_DIARIZER_CMD: /opt/quill/diarizer-venv/bin/quill-diarize
+      # The diarizer converts long recordings in a TemporaryDirectory: keep that on disk.
+      TMPDIR: /var/lib/quill/cache/tmp
+    depends_on:
+      api:
+        condition: service_healthy
+    stop_grace_period: 60s   # stages are checkpointed in SQLite and resume on start
+    cpu_shares: 512          # diarization uses every core but yields to the API
+    mem_limit: 9g            # diarizer subprocess included
+
+  web:
+    image: ${QUILL_WEB_IMAGE:-quill-web:dev}
+    ports:
+      - "80:80"
+    volumes:
+      - /etc/quill/nginx-real-ip.conf:/etc/quill/nginx-real-ip.conf:ro
+      - web:/srv/www
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+    logging:
+      driver: journald
+      options:
+        tag: "{{.Name}}"
+
+volumes:
+  # Published frontend. Hashed assets accumulate across releases so open tabs can
+  # still lazy-load the chunks they were built against.
+  web: {}

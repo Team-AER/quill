@@ -9,6 +9,63 @@ written onto the Proxmox host: files are streamed with
 In the examples below, replace `root@pve` with your Proxmox host and `<CTID>` with
 the container id.
 
+## Docker (recommended)
+
+Quill runs as three containers inside the CT: `api` and `worker` (one image with
+the backend and the CPU diarizer on the latest stable CPython) and `web` (nginx
+with the built frontend). The CT only needs Docker Engine, so an OS release
+upgrade of the container (which replaces the system Python) cannot break Quill.
+
+```sh
+deploy/deploy-docker.sh root@pve <CTID>                 # tests + build in the CT + switch
+APP_URL=https://quill.example.com deploy/deploy-docker.sh root@pve <CTID>   # plus public checks
+```
+
+`deploy-docker.sh` streams `git archive HEAD` into the CT, installs Docker from
+Docker's apt repository if it is missing (`install-docker.sh`; an unprivileged
+CT with `nesting=1` is enough), and runs `docker-release.sh` from the same
+archive. That script:
+
+1. Builds `quill:<sha>-<ts>` and `quill-web:<sha>-<ts>` while the running release
+   keeps serving, then runs an import preflight in the new image.
+2. Creates `/etc/quill/quill.env` and `/etc/quill/nginx-real-ip.conf` on first
+   install, exactly as the native installer does.
+3. Stops the worker and the API, takes a `pre-deploy` SQLite snapshot, points
+   `/opt/quill/.env` at the new images, runs `python -m quill.db migrate`, and
+   starts `api` and `web` (`docker compose up --wait`).
+4. Checks `/api/auth/state` and `/` through nginx, starts the worker and checks it
+   stays up.
+5. On any failure, restores the snapshot if a migration ran and starts the
+   previous release again: the previous images, or on the first Docker deploy the
+   native systemd units (which it otherwise disables but leaves on disk).
+6. Keeps the newest 3 image tags and source trees.
+
+| Path inside the CT | Purpose |
+|---|---|
+| `/opt/quill/compose.yaml`, `/opt/quill/.env` | the running stack; `.env` pins the image tags |
+| `/etc/quill/quill.env` | settings (unchanged from the native install) |
+| `/var/lib/quill` | data, bind-mounted into `api` and `worker` |
+| `quill-backup.timer` | nightly `backup.py`, now run with `docker compose run` |
+
+Operations:
+
+```sh
+ssh root@pve "pct exec <CTID> -- docker compose -f /opt/quill/compose.yaml --env-file /opt/quill/.env ps"
+ssh root@pve "pct exec <CTID> -- journalctl CONTAINER_TAG=quill-api-1 CONTAINER_TAG=quill-worker-1 -f"
+ssh root@pve "pct exec <CTID> -- quill-users list"     # runs inside the api container
+```
+
+Manual rollback: put the previous `QUILL_IMAGE`/`QUILL_WEB_IMAGE` tags back into
+`/opt/quill/.env` (`/opt/quill/.env.previous` holds them after a Docker deploy),
+restore the matching `quill-pre-deploy-*.sqlite3.gz` if the schema changed, and
+run `docker compose -f /opt/quill/compose.yaml --env-file /opt/quill/.env up -d`.
+
+The rest of this document describes the original native install (systemd units
+over a venv built from the CT's system Python). It still works on Ubuntu 24.04,
+but a release upgrade of the CT breaks its venvs; prefer Docker.
+
+## Native install (legacy)
+
 | File | Where it ends up (inside the CT) |
 |---|---|
 | `provision-lxc.sh` | run once from your workstation: creates the CT, apt packages, user, dirs |

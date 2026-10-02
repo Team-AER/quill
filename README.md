@@ -44,10 +44,10 @@ static build served by nginx in front of the API.
 
 | Part | Stack |
 | --- | --- |
-| `backend/` | Python 3.12, FastAPI, SQLite (WAL, FTS5), a single worker process |
+| `backend/` | Python 3.14, FastAPI, SQLite (WAL, FTS5), a single worker process |
 | `diarizer/` | PyTorch CPU + Transformers, own venv, called as a subprocess |
 | `frontend/` | React 19, Vite, TypeScript, no UI framework |
-| `deploy/` | Proxmox LXC provisioning, releases, systemd units, nginx, backups |
+| `deploy/` | Proxmox LXC provisioning, Docker images + compose (`deploy-docker.sh`), nginx, backups |
 
 ### What the model gateway must provide
 
@@ -76,7 +76,7 @@ npm run dev          # http://localhost:5180, sign in as admin@quill.test / quil
 
 ```sh
 cd backend
-python3.12 -m venv .venv
+python3.14 -m venv .venv
 .venv/bin/pip install -e '.[dev]'
 .venv/bin/python -m pytest -q
 
