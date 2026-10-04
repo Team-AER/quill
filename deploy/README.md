@@ -11,8 +11,13 @@ the container id.
 
 ## Docker (recommended)
 
+For project purpose, features and the model gateway contract, start with the
+[README](../README.md). These scripts provision or deploy a real installation;
+the [frontend mock quick start](../README.md#quick-start) is the lighter way to try
+the reader. Run deployment commands from the repository root.
+
 Quill runs as three containers inside the CT: `api` and `worker` (one image with
-the backend and the CPU diarizer on the latest stable CPython) and `web` (nginx
+the backend and the CPU diarizer on Python 3.14 by default) and `web` (nginx
 with the built frontend). The CT only needs Docker Engine, so an OS release
 upgrade of the container (which replaces the system Python) cannot break Quill.
 

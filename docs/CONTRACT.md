@@ -1,14 +1,16 @@
 # Quill internal contract (read before touching code)
 
-Implements docs/PLAN.md. Several people build this in parallel; every module
-has one owner. Do not edit files outside your area; if the contract must change,
-say so in your final report instead of changing another area.
+Reference for module boundaries and data shapes. The [original design plan](PLAN.md)
+is historical rationale. Letter annotations below record the initial build areas;
+they are not current ownership or contribution restrictions. Source modules are the
+authority when this overview differs from implementation. See [the README](../README.md)
+for current setup and [the reader guide](USAGE.md) for user workflows.
 
 ## Layout and ownership
 
 ```
-backend/                      Python 3.12, FastAPI, SQLite (stdlib sqlite3), no ORM
-  pyproject.toml              [A] deps for api+worker (NOT torch/nemo)
+backend/                      Python >=3.12 (Docker: 3.14), FastAPI, SQLite, no ORM
+  pyproject.toml              [A] deps for api+worker (NOT torch/transformers)
   quill/__init__.py           [A]
   quill/config.py             [A] Settings from env QUILL_* (see below)
   quill/db.py                 [A] schema + connection helpers + migrations
@@ -29,7 +31,7 @@ backend/                      Python 3.12, FastAPI, SQLite (stdlib sqlite3), no 
   quill/pipeline/vision.py    [C2] frame analysis stage
   quill/pipeline/synthesis.py [C2] map-reduce notes stage
   tests/                      each owner adds test_<module>.py; fakes, no network
-diarizer/                     [B] standalone package, own venv (torch-cpu + nemo)
+diarizer/                     [B] standalone package, own venv (torch-cpu + Transformers)
 frontend/                     [D] React 19 + Vite + TypeScript
 deploy/                       [E] provision/deploy/install scripts, systemd units
 ```
