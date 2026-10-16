@@ -5229,6 +5229,16 @@ fieldset.field {
     order: 5;
     flex: 1 1 100%;
   }
+  input.input,
+  textarea.input,
+  select.select,
+  .search-field .input {
+    font-size: 16px;
+  }
+  .page-head .segmented {
+    max-width: 100%;
+    flex-wrap: wrap;
+  }
   .library .page-head .btn.primary {
     display: none;
   }
@@ -5377,5 +5387,17 @@ fieldset.field {
   }
   dialog.palette {
     margin-top: 8vh;
+  }
+}
+
+/* Keep every playback control reachable on narrow phones, even for hour-long recordings. */
+@media (max-width: 480px) {
+  .ctl-row {
+    flex-wrap: wrap;
+  }
+  .ctl-time {
+    order: -1;
+    flex: 0 0 100%;
+    margin: 0 0 2px;
   }
 }
