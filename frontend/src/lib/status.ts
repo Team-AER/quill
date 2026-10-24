@@ -3,6 +3,24 @@ import { estimateEta } from "./time";
 
 export type Tone = "ok" | "run" | "paused" | "failed" | "neutral";
 
+const STAGE_TASK: Record<string, string> = {
+  probe: "Recording check",
+  extract_audio: "Audio extraction",
+  diarize: "Speaker detection",
+  transcribe: "Transcription",
+  key_moments: "Key moment detection",
+  frames: "Frame extraction",
+  synthesize: "Notes generation",
+};
+
+export function stageTask(name: string | undefined): string {
+  return name ? (STAGE_TASK[name] ?? STAGE_LABEL[name] ?? "Processing") : "Processing";
+}
+
+export function retryStageLabel(name: string | undefined): string {
+  return `Retry ${stageTask(name).toLowerCase()}`;
+}
+
 export interface Phase {
   label: string;
   tone: Tone;
