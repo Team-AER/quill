@@ -2,7 +2,7 @@ import { AlertTriangle, Check, Circle, Loader2, Minus, Pause, RotateCcw, Setting
 import { useEffect, useState } from "react";
 import { STAGE_LABEL, type Meeting } from "../../api/types";
 import { linkClick } from "../../lib/router";
-import { meetingPhase, retryStageLabel, sortStages, stageEta, stageTask } from "../../lib/status";
+import { meetingPhase, pauseMessage, retryStageLabel, sortStages, stageEta, stageTask } from "../../lib/status";
 import { formatDuration } from "../../lib/time";
 
 const sentence = (s: string) => (/[.!?…]$/.test(s.trim()) ? s.trim() : `${s.trim()}.`);
@@ -30,9 +30,15 @@ export function Pipeline({ meeting, isAdmin, onRetry, busy }: { meeting: Meeting
       {paused && (
         <div className="banner paused" role="status">
           <Pause size={14} />
-          <span className="b-text">
-            <strong>{STAGE_LABEL[paused.name] ?? paused.name} paused.</strong> {sentence(paused.detail || paused.error || "Waiting to resume")} Quill resumes automatically; nothing is lost.
-          </span>
+          <div className="b-text">
+            <strong>{stageTask(paused.name)} paused.</strong> {pauseMessage(paused)} Quill retries automatically.
+            {(paused.detail || paused.error) && (
+              <details className="failure-details">
+                <summary>Technical details</summary>
+                <p>{sentence(paused.detail || paused.error || "")}</p>
+              </details>
+            )}
+          </div>
           {isAdmin && /model|llm-proxy|disabled/i.test(paused.detail ?? "") && (
             <a className="btn sm" href="/settings/system" onClick={linkClick}>
               <Settings size={13} /> Models

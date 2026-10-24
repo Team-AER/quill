@@ -83,3 +83,12 @@ export function stageEta(s: Stage, now = Date.now()): number | null {
   if (Number.isNaN(started)) return null;
   return estimateEta(s.progress, (now - started) / 1000);
 }
+
+export function pauseMessage(stage: Stage): string {
+  const reason = stage.detail || stage.error || "";
+  if (/llm-proxy catalog unreachable/i.test(reason)) return "Speech service unavailable.";
+  if (/disabled in llm-proxy/i.test(reason)) {
+    return stage.name === "transcribe" ? "Speech model unavailable." : "Processing model unavailable.";
+  }
+  return "Waiting to resume.";
+}
