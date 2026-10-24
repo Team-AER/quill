@@ -2,7 +2,7 @@ import { AlertTriangle, Check, Circle, Loader2, Minus, Pause, RotateCcw, Setting
 import { useEffect, useState } from "react";
 import { STAGE_LABEL, type Meeting } from "../../api/types";
 import { linkClick } from "../../lib/router";
-import { meetingPhase, sortStages, stageEta } from "../../lib/status";
+import { meetingPhase, retryStageLabel, sortStages, stageEta, stageTask } from "../../lib/status";
 import { formatDuration } from "../../lib/time";
 
 const sentence = (s: string) => (/[.!?…]$/.test(s.trim()) ? s.trim() : `${s.trim()}.`);
@@ -43,12 +43,16 @@ export function Pipeline({ meeting, isAdmin, onRetry, busy }: { meeting: Meeting
       {failed && (
         <div className="banner failed" role="alert">
           <AlertTriangle size={14} />
-          <span className="b-text">
-            <strong>{STAGE_LABEL[failed.name] ?? failed.name} failed.</strong> {sentence(failed.error || failed.detail || meeting.error || "Unknown error")}
-          </span>
+          <div className="b-text">
+            <strong>{stageTask(failed.name)} stopped.</strong> {onRetry ? "Retry this stage to continue processing." : "The meeting owner can retry this stage."}
+            <details className="failure-details">
+              <summary>Technical details</summary>
+              <p>{sentence(failed.error || failed.detail || meeting.error || "No additional details were provided")}</p>
+            </details>
+          </div>
           {onRetry && (
             <button type="button" className="btn sm primary" onClick={() => onRetry(failed.name)} disabled={busy}>
-              <RotateCcw size={13} /> Retry
+              <RotateCcw size={13} /> {retryStageLabel(failed.name)}
             </button>
           )}
         </div>

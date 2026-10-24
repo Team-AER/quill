@@ -13,7 +13,7 @@ import { removeMeeting, useMeetings } from "../lib/meetings";
 import { displayName } from "../lib/people";
 import { usePref } from "../lib/prefs";
 import { linkClick, navigate } from "../lib/router";
-import { meetingPhase, sortStages, stageEta } from "../lib/status";
+import { meetingPhase, retryStageLabel, sortStages, stageEta, stageTask } from "../lib/status";
 import { formatBytes, formatDate, formatDuration, formatTimestamp } from "../lib/time";
 import { errorText, toast } from "../lib/toast";
 import { openFilePicker } from "../lib/ui";
@@ -243,12 +243,12 @@ function StatusNote({ m }: { m: Meeting }) {
       <div className="note failed">
         <AlertTriangle size={13} />
         <span>
-          <b>{p.stage ? `${STAGE_LABEL[p.stage.name] ?? p.stage.name} failed` : "Failed"}</b>
-          {p.reason ? ` · ${p.reason}` : ""}
+          <b>{stageTask(p.stage?.name)} stopped</b>
+          {" · Open for details"}
         </span>
         {retry.can && isMine(m) && (
           <button type="button" className="btn sm" onClick={() => void retry.run()} disabled={retry.busy}>
-            Retry
+            {retryStageLabel(p.stage?.name)}
           </button>
         )}
       </div>

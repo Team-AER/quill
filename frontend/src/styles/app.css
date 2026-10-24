@@ -1908,7 +1908,10 @@ dialog.shortcuts {
   background: var(--danger-tint);
   color: var(--danger-ink);
   align-items: center;
+  flex-wrap: wrap;
 }
+.note.failed > span { flex-basis: 120px; }
+.note.failed .btn { max-width: 100%; white-space: normal; text-align: left; }
 .note.failed > svg {
   margin-top: 0;
 }
@@ -2280,7 +2283,14 @@ dialog.shortcuts {
 .banner.failed {
   background: var(--danger-tint);
   color: var(--danger-ink);
+  flex-wrap: wrap;
 }
+.banner.failed .b-text { flex: 1 1 200px; }
+.banner.failed > svg { flex-shrink: 0; }
+.banner.failed > .btn { max-width: 100%; white-space: normal; margin-left: auto; }
+.failure-details { margin-top: 6px; }
+.failure-details summary { cursor: pointer; min-height: 24px; }
+.failure-details p { margin: 6px 0 0; overflow-wrap: anywhere; }
 .banner.info {
   background: var(--field);
   color: var(--muted);
