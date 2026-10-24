@@ -1,5 +1,6 @@
 import { Info, Maximize, Minimize, Pause, PictureInPicture2, Play, RotateCcw, RotateCw, Volume2, VolumeX, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { momentMotion } from "../../lib/motion";
 import { mediaUrl } from "../../api/client";
 import type { Chapter, Meeting, Speaker, TranscriptLine } from "../../api/types";
 import { Menu } from "../../components/Menu";
@@ -220,6 +221,7 @@ export function Player({ meeting, lines, speakers, chapters, poster, deepLinked 
   const [idle, setIdle] = useState(false);
   const wrap = useRef<HTMLDivElement>(null);
   const idleTimer = useRef<number | undefined>(undefined);
+  useEffect(() => momentMotion(wrap.current, [{ opacity: 0, transform: "translateY(20px) scale(.98)" }, { opacity: 1, transform: "none" }], 650), [meeting.id, noPicture]);
   const duration = meeting.duration_s ?? 0;
   const playing = usePlayerValue((p) => p.playing);
   const started = usePlayerValue((p) => p.playing || p.time > 0.5);
@@ -288,7 +290,7 @@ export function Player({ meeting, lines, speakers, chapters, poster, deepLinked 
   }
 
   return (
-    <div className="player audio">
+    <div ref={wrap} className="player audio">
       <audio ref={refAudio} src={mediaUrl(meeting.id)} preload="metadata" onError={onError} />
       {chip}
       <Controls chapters={chapters} video={false} />

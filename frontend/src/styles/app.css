@@ -5418,7 +5418,7 @@ fieldset.field {
 .m-title h1, .m-title input { font-size: clamp(21px, 2vw, 28px); line-height: 1.16; letter-spacing: -.025em; white-space: normal; }
 .m-title h1 button { white-space: normal; text-wrap: pretty; }
 .m-title .sub { flex-wrap: wrap; }
-.m-left > .player { border: 1px solid var(--line); box-shadow: 0 12px 32px color-mix(in srgb, var(--accent) 8%, transparent), 0 2px 4px var(--line); animation: studio-frame 650ms var(--ease) both; }
+.m-left > .player { border: 1px solid var(--line); box-shadow: 0 12px 32px color-mix(in srgb, var(--accent) 8%, transparent), 0 2px 4px var(--line); }
 .map { background: linear-gradient(120deg, var(--content-2), var(--content)); border-top: 2px solid var(--accent); }
 .map-caption { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; min-width: 0; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
 .map-index { font-size: 26px; line-height: 1; font-weight: 650; color: var(--accent); letter-spacing: -.04em; }
@@ -5427,8 +5427,7 @@ fieldset.field {
 .map-steps { display: flex; gap: 4px; }
 .map-steps button { width: 28px; height: 28px; border: 1px solid var(--line); background: var(--content); color: var(--accent); border-radius: 7px; font-size: 21px; cursor: pointer; }
 .map-steps button:disabled { opacity: .4; cursor: default; }
-.tx-line.active .l { animation: studio-line 420ms var(--ease); }
-.tabpanel { animation: studio-context 420ms var(--ease) both; transform-origin: top; }
+.tabpanel { transform-origin: top; }
 @keyframes studio-frame { from { opacity: 0; transform: translateY(20px) scale(.98); } to { opacity: 1; transform: none; } }
 @keyframes studio-line { from { transform: translateX(12px); background: var(--accent-tint); } to { transform: none; } }
 @keyframes studio-context { from { opacity: .3; transform: translateY(18px); clip-path: inset(0 0 14% 0); } to { opacity: 1; transform: none; clip-path: inset(0); } }

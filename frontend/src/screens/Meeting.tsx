@@ -10,6 +10,7 @@ import { ShareSheet } from "../components/ShareSheet";
 import { StatusPill } from "../components/StatusPill";
 import { LANGUAGES } from "../components/UploadSheet";
 import { copyText, momentUrl, notesMarkdown } from "../lib/copy";
+import { momentMotion } from "../lib/motion";
 import { patchMeeting, removeMeeting } from "../lib/meetings";
 import { displayName } from "../lib/people";
 import { PlayerContext, PlayerStore } from "../lib/player";
@@ -43,6 +44,9 @@ export function MeetingScreen({ id, user, initialT }: { id: string; user: User; 
   const tx = useRef<TranscriptHandle>(null);
   const seeded = useRef(false);
   const tabsRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const meetingId = meeting?.id;
+  useEffect(() => momentMotion(panelRef.current, [{ opacity: .3, transform: "translateY(18px)", clipPath: "inset(0 0 14% 0)" }, { opacity: 1, transform: "none", clipPath: "inset(0)" }]), [tab, meetingId]);
   const [ink, setInk] = useState<{ left: number; width: number } | null>(null);
 
   const speakers = useMemo(() => new Map<string, Speaker>((meeting?.speakers ?? []).map((s) => [s.label, s])), [meeting?.speakers]);
@@ -489,7 +493,7 @@ export function MeetingScreen({ id, user, initialT }: { id: string; user: User; 
                 </button>
               )}
             </div>
-            <div className="tabpanel" role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`} key={tab}>
+            <div ref={panelRef} className="tabpanel" role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`} key={tab}>
               {tab === "summary" && (
                 <SummaryTab
                   notes={notes}
