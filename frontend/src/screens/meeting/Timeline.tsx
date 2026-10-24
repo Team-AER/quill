@@ -1,4 +1,5 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { momentMotion } from "../../lib/motion";
 import { frameImageUrl } from "../../api/client";
 import type { Chapter, Frame, Moment, Speaker, TranscriptLine } from "../../api/types";
 import { usePlayer, usePlayerValue } from "../../lib/player";
@@ -28,6 +29,7 @@ interface Marker {
 export function Timeline({ duration, lines, speakers, chapters, frames, moments, onFrame, onSpeaker }: Props) {
   const store = usePlayer();
   const track = useRef<HTMLDivElement>(null);
+  const caption = useRef<HTMLDivElement>(null);
   const [hover, setHover] = useState<number | null>(null);
   const dur = usePlayerValue((p) => p.duration) || duration || 1;
   const nowS = usePlayerValue((p) => Math.floor(p.time));
@@ -38,6 +40,8 @@ export function Timeline({ duration, lines, speakers, chapters, frames, moments,
     });
     return idx;
   });
+
+  useEffect(() => momentMotion(caption.current, [{ transform: "translateX(18px)", opacity: 0.4 }, { transform: "none", opacity: 1 }], 420), [curCh]);
 
   const labels = useMemo(() => {
     const s = new Set<string>();
@@ -89,10 +93,19 @@ export function Timeline({ duration, lines, speakers, chapters, frames, moments,
 
   return (
     <section className={`map ${many ? "dense" : ""}`} aria-label="Meeting map">
-      <div className="map-labels" aria-hidden>
+      <div className="map-caption" ref={caption}>
+        <span className="map-index num">{curCh >= 0 ? String(curCh + 1).padStart(2, "0") : "—"}</span>
+        <strong>{chapters[curCh]?.title || "Recording timeline"}</strong>
+        <span className="map-time num">{formatTimestamp(nowS)} / {formatTimestamp(dur)}</span>
+        {chapters.length > 1 && <span className="map-steps">
+          <button type="button" aria-label="Previous chapter" disabled={curCh <= 0} onClick={() => store.seek(chapters[curCh - 1].start, true)}>‹</button>
+          <button type="button" aria-label="Next chapter" disabled={curCh >= chapters.length - 1} onClick={() => store.seek(chapters[Math.max(0, curCh + 1)].start, true)}>›</button>
+        </span>}
+      </div>
+      <div className="map-labels">
         {chapters.length > 0 && <span className="ml-row ml-head">Chapters</span>}
         {labels.map((lab) => (
-          <button key={lab} type="button" tabIndex={-1} className="ml-row ml-spk" onClick={() => onSpeaker?.(lab)} title={speakerName(lab, speakers)}>
+          <button key={lab} type="button" className="ml-row ml-spk" onClick={() => onSpeaker?.(lab)} title={speakerName(lab, speakers)} aria-label={`Filter transcript to ${speakerName(lab, speakers)}`}>
             <i style={{ background: speakerVar(speakerSlot(lab, speakers)) }} />
             <span>{speakerName(lab, speakers)}</span>
           </button>

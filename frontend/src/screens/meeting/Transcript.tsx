@@ -4,6 +4,7 @@ import { forwardRef, memo, useCallback, useEffect, useImperativeHandle, useMemo,
 import type { Speaker, TranscriptLine } from "../../api/types";
 import { Avatar } from "../../components/Avatars";
 import { copyText, momentUrl, quoteText } from "../../lib/copy";
+import { momentMotion } from "../../lib/motion";
 import { usePlayer, usePlayerValue } from "../../lib/player";
 import { speakerName, speakerSlot, speakerVar } from "../../lib/speakers";
 import { formatTimestamp } from "../../lib/time";
@@ -288,11 +289,14 @@ const Line = memo(function Line({
   playing: boolean;
   onSeek: (t: number) => void;
 }) {
+  const lineRef = useRef<HTMLDivElement>(null);
+  useEffect(() => isActive ? momentMotion(lineRef.current, [{ transform: "translateX(12px)", background: "var(--accent-tint)" }, { transform: "none" }]) : undefined, [isActive]);
   const slot = speakerSlot(line.speaker, speakers);
   const name = speakerName(line.speaker, speakers);
   const parts = highlightParts(line.text, query);
   return (
     <div
+      ref={lineRef}
       className="l"
       onClick={(e) => {
         if (window.getSelection()?.toString()) return; // let people copy quotes
