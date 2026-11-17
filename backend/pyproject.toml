@@ -10,6 +10,7 @@ requires-python = ">=3.12"
 license = "MIT"
 # API + worker only. The diarizer (torch-cpu + NeMo) lives in its own venv (diarizer/).
 dependencies = [
+    "sentry-sdk>=2.75,<3",
     "fastapi>=0.115",
     "uvicorn[standard]>=0.34",
     "httpx>=0.28",

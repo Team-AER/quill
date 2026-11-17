@@ -335,6 +335,9 @@ class Worker:
 
 
 def main() -> None:
+    from .monitoring import configure_monitoring
+
+    configure_monitoring()
     logging.basicConfig(level=os.environ.get("QUILL_LOG_LEVEL", "INFO"),
                         format="%(asctime)s %(levelname)s %(name)s %(message)s")
     settings = Settings.from_env()

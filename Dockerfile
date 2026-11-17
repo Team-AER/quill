@@ -19,6 +19,10 @@ WORKDIR /src/frontend
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci --no-audit --no-fund
 COPY frontend/ ./
+ARG VITE_GLITCHTIP_DSN=""
+ARG VITE_GLITCHTIP_TUNNEL=""
+ARG VITE_SENTRY_ENVIRONMENT="production"
+ARG VITE_SENTRY_RELEASE=""
 RUN npm run build && test -f dist/index.html
 
 # --- python environments ----------------------------------------------------
