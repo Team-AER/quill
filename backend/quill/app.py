@@ -19,6 +19,9 @@ from .config import Settings
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
+    from .monitoring import configure_monitoring
+
+    configure_monitoring()
     settings = settings or Settings.from_env()
     settings.ensure_dirs()
     db.init(settings.db_path)
